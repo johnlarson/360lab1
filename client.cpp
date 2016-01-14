@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -16,37 +17,41 @@ using namespace std;
 
 void usage();
 void parseFlags(int argc, char* argv[], bool &debug, int &count);
-void parseOtherArgs(int argc, char* argv[], string &host, int &port, string &path);
-int download(string host, int port, string path, bool debug, bool count);
+string getArg(int argc, char* argv[], int &i);
+void download(string host, int port, string path, bool debug, bool count);
 
 int main(int argc, char* argv[]) {
-	if(argc < 3 || argc > 5) {
+	if(argc < 3) {
+		perror("Wrong number of args\n");
 		usage();
 	} else {
-		string host;
-		int port;
-		string path;
 		bool debug;
 		int count = 1;
 		parseFlags(argc, argv, debug, count);
-		if(debug == true) cout << "debug == true";
-		else cout << "debug == false";
-		cout << "count == " << count;
-		parseOtherArgs(argc, argv, host, port, path);
-		//download
+		if(debug == true) cout << "debug == true" << endl;
+		else cout << "debug == false" << endl;
+		cout << "count == " << count << endl;
+		int i = 1;
+		string host = getArg(argc, argv, i);
+		cout << "host: " << host << endl;
+		string portStr = getArg(argc, argv, i);
+		int port = stoi(portStr, nullptr);
+		cout << "port: " << port << endl;
+		string path = getArg(argc, argv, i); 
+		cout << "path: " << path << endl;
 	}
 }
 
 void usage() {
-	perror("Usage: download host-name port path");
-	abort();
+	perror("Usage: download host-name port path\n");
+	exit(EXIT_SUCCESS);
 }
 
 void parseFlags(int argc, char* argv[], bool &debug, int &count) {
 	int f;
 	char* fvalue = NULL;
 	int index;
-	while(f = getopt(argc, argv, "c:d")) {
+	while((f = getopt(argc, argv, "c:d")) != -1) {
 		switch(f) {
 			case 'd':
 				debug = true;
@@ -55,88 +60,23 @@ void parseFlags(int argc, char* argv[], bool &debug, int &count) {
 				count = stoi(optarg);
 				break;
 			case '?':
-				usage();
+				//usage();
 				break;
-			default:
-				usage();
 		}
 	}
 }
 
-void parseOtherArgs(int argc, char* argv[], string &host, int &port, string &path) {
+string getArg(int argc, char* argv[], int &i) {
+	while(i <= argc) {
+		if(argv[i][0] != '-') {
+			i++;
+			return string(argv[i]);
+		} 
+		i++;
+	}
+}
+
+void download(string host, int port, string path, bool debug, bool count) {
 	
 }
 
-int download(string host, int port, string path, bool debug, bool count) {
-	
-}
-
-int  old(int argc, char* argv[])
-{
-    int hSocket;                 /* handle to socket */
-    struct hostent* pHostInfo;   /* holds info about a machine */
-    struct sockaddr_in Address;  /* Internet socket address stuct */
-    long nHostAddress;
-    char pBuffer[BUFFER_SIZE];
-    unsigned nReadAmount;
-    char strHostName[HOST_NAME_SIZE];
-    int nHostPort;
-
-    if(argc < 3)
-      {
-        printf("\nUsage: client host-name host-port\n");
-        return 0;
-      }
-    else
-      {
-        strcpy(strHostName,argv[1]);
-        nHostPort=atoi(argv[2]);
-      }
-
-    printf("\nMaking a socket");
-    /* make a socket */
-    hSocket=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-
-    if(hSocket == SOCKET_ERROR)
-    {
-        printf("\nCould not make a socket\n");
-        return 0;
-    }
-
-    /* get IP address from name */
-    pHostInfo=gethostbyname(strHostName);
-    /* copy address into long */
-    memcpy(&nHostAddress,pHostInfo->h_addr,pHostInfo->h_length);
-
-    /* fill address struct */
-    Address.sin_addr.s_addr=nHostAddress;
-    Address.sin_port=htons(nHostPort);
-    Address.sin_family=AF_INET;
-
-    printf("\nConnecting to %s (%X) on port %d",strHostName,nHostAddress,nHostPort);
-
-    /* connect to host */
-    if(connect(hSocket,(struct sockaddr*)&Address,sizeof(Address)) 
-       == SOCKET_ERROR)
-    {
-        printf("\nCould not connect to host\n");
-        return 0;
-    }
-
-    /* read from socket into buffer
-    ** number returned by read() and write() is the number of bytes
-    ** read or written, with -1 being that an error occured */
-    nReadAmount=read(hSocket,pBuffer,BUFFER_SIZE);
-    printf("\nReceived \"%s\" from server\n",pBuffer);
-    /* write what we received back to the server */
-    write(hSocket,pBuffer,nReadAmount);
-    printf("\nWriting \"%s\" to server",pBuffer);
-
-    printf("\nClosing socket\n");
-    /* close socket */                       
-    if(close(hSocket) == SOCKET_ERROR)
-    {
-        printf("\nCould not close socket\n");
-        return 0;
-    }
-}
