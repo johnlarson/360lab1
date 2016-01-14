@@ -35,10 +35,12 @@ int main(int argc, char* argv[]) {
 		string host = getArg(argc, argv, i);
 		cout << "host: " << host << endl;
 		string portStr = getArg(argc, argv, i);
-		int port = stoi(portStr, nullptr);
+		cout << "portStr: " << portStr << endl;
+		int port = stoi(portStr);
 		cout << "port: " << port << endl;
 		string path = getArg(argc, argv, i); 
 		cout << "path: " << path << endl;
+		download(host, port, path, debug, count);
 	}
 }
 
@@ -67,16 +69,22 @@ void parseFlags(int argc, char* argv[], bool &debug, int &count) {
 }
 
 string getArg(int argc, char* argv[], int &i) {
-	while(i <= argc) {
+	while(i < argc) {
 		if(argv[i][0] != '-') {
+			string result =  string(argv[i]);
 			i++;
-			return string(argv[i]);
+			return result;
 		} 
 		i++;
 	}
 }
 
 void download(string host, int port, string path, bool debug, bool count) {
-	
+	cout << "DOWNLOAD" << endl;
+	cout << "host: " << host << endl;
+	cout << "port: " << port << endl;
+	cout << "path: " << path << endl;
+	cout << "debug: " << debug << endl;
+	cout << "count: " << count << endl;	
 }
 
