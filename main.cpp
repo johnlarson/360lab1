@@ -13,7 +13,7 @@ using namespace std;
 
 void usage();
 void parseFlags(int argc, char* argv[], bool &debug, int &count);
-string getArg(int argc, char* argv[], int &i);
+char* getArg(int argc, char* argv[], int &i);
 
 int main(int argc, char* argv[]) {
 	if(argc < 3) {
@@ -21,13 +21,13 @@ int main(int argc, char* argv[]) {
 		usage();
 	} else {
 		int i = 1;
-		string host = getArg(argc, argv, i);
+		char* host = getArg(argc, argv, i);
 		cout << "host: " << host << endl;
-		string port = getArg(argc, argv, i);
+		char* port = getArg(argc, argv, i);
 		cout << "port: " << port << endl;
-		string path = getArg(argc, argv, i); 
+		char* path = getArg(argc, argv, i); 
 		cout << "path: " << path << endl;
-		bool debug;
+		bool debug = false;
 		int count = 1;
 		parseFlags(argc, argv, debug, count);
 		if(debug == true) cout << "debug == true" << endl;
@@ -40,4 +40,34 @@ int main(int argc, char* argv[]) {
 void usage() {
 	perror("Usage: download host-name port path\n");
 	exit(EXIT_SUCCESS);
+}
+
+void parseFlags(int argc, char* argv[], bool &debug, int &count) {
+	int f;
+	char* fvalue = NULL;
+	int index;
+	while((f = getopt(argc, argv, "c:d")) != -1) {
+		switch(f) {
+			case 'd':
+				debug = true;
+				break;
+			case 'c':
+				count = stoi(optarg);
+				break;
+			case '?':
+				//usage();
+				break;
+		}
+	}
+}
+
+char* getArg(int argc, char* argv[], int &i) {
+	while(i < argc) {
+		if(argv[i][0] != '-') {
+			char* result =  argv[i];
+			i++;
+			return result;
+		} 
+		i++;
+	}
 }

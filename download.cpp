@@ -15,7 +15,7 @@ using namespace std;
 #define BUFFER_SIZE         100
 #define HOST_NAME_SIZE      255
 
-void download(string host, string port, string path, bool debug, bool count) {
+void download(char* host, char* port, char* path, bool debug, int count) {
 	cout << "DOWNLOAD" << endl;
 	cout << "host: " << host << endl;
 	cout << "port: " << port << endl;
