@@ -1,15 +1,17 @@
+CC = g++ -std=c++11 -c
+
 all: objs exe rmobjs
 
-objs: main.o download.o
+objs: main download
 
-main.o:
-	g++ -c main.cpp
+main:
+	$(CC) main.cpp
 
-download.o:
-	g++ -c download.cpp
+download:
+	$(CC) download.cpp
 
 exe:
-	g++ *.o download
+	g++ *.o -o download
 
 rmobjs:
 	rm *.o
