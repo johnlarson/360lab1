@@ -19,9 +19,10 @@ int main(int argc, char* argv[]) {
 		char* port = getArg(argc, argv, i);
 		char* path = getArg(argc, argv, i); 
 		bool debug = false;
-		int count = 1;
+		bool multi = false;
+		int count = 0;
 		parseFlags(argc, argv, debug, count);
-		download(host, port, path, debug, count);
+		download(host, port, path, debug, multi, count);
 	}
 }
 
@@ -30,7 +31,7 @@ void usage() {
 	exit(EXIT_SUCCESS);
 }
 
-void parseFlags(int argc, char* argv[], bool &debug, int &count) {
+void parseFlags(int argc, char* argv[], bool &debug, bool &multi, int &count) {
 	int f;
 	char* fvalue = NULL;
 	int index;
@@ -40,6 +41,7 @@ void parseFlags(int argc, char* argv[], bool &debug, int &count) {
 				debug = true;
 				break;
 			case 'c':
+				multi = true;
 				count = stoi(optarg);
 				break;
 			case '?':
