@@ -18,7 +18,7 @@ using namespace std;
 
 char* buildRequest(char* host, char* port, char* path);
 string getResponse(char* request, char* host, int port);
-void parseHttp(string response, map<string, string> &headers, string body);
+void parseHttp(string response, string &headers, string &body);
 void printDebug(char* request, map<string, string> headers);
 void spamRequests(char* request, int count);
 
@@ -26,7 +26,7 @@ void download(char* host, char* portStr, char* path, bool debug, bool multi, int
 	char* request = buildRequest(host, portStr, path);
 	int portInt = stoi(portStr);
 	string response = getResponse(request, host, portInt);
-	map<string, string> headers;
+	string headers;
 	string body;
 	parseHttp(response, headers, body);
 	if(debug) {
@@ -68,16 +68,18 @@ string getResponse(char* request, char* host, int port) {
 		errorAndExit("Could not connect to host");
 	}
 	write(socketHandle, request, strlen(request));
-	char* responseBuffer;
+	char* responseBuffer = (char*)malloc(READ_AMOUNT);
 	read(socketHandle, responseBuffer, READ_AMOUNT);
+	string result = string(responseBuffer);
+	cout << result << endl;
 	return string(responseBuffer);
 }
 
-void parseHttp(string response, map<string, string> &headers, string body) {
+void parseHttp(string response, string &headers, string &body) {
 	/* while getline !=0 { nothing } body = get the rest*/ 
 }
 
-void printDebug(char* request, map<string, string> headers) {
+void printDebug(char* request, string headers) {
 	printf(request);
 }
 
