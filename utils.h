@@ -1,0 +1,1 @@
+void errorAndExit(char* msg);

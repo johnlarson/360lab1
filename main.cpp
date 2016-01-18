@@ -3,11 +3,12 @@
 #include <cstdio>
 #include <string>
 #include "download.h"
+#include "utils.h"
 
 using namespace std;
 
 void usage();
-void parseFlags(int argc, char* argv[], bool &debug, int &count);
+void parseFlags(int argc, char* argv[], bool &debug, bool &multi, int &count);
 char* getArg(int argc, char* argv[], int &i);
 
 int main(int argc, char* argv[]) {
@@ -21,14 +22,13 @@ int main(int argc, char* argv[]) {
 		bool debug = false;
 		bool multi = false;
 		int count = 0;
-		parseFlags(argc, argv, debug, count);
+		parseFlags(argc, argv, debug, multi, count);
 		download(host, port, path, debug, multi, count);
 	}
 }
 
 void usage() {
-	perror("Usage: download host-name port path\n");
-	exit(EXIT_SUCCESS);
+	errorAndExit("Usage: download host-name port path\n");
 }
 
 void parseFlags(int argc, char* argv[], bool &debug, bool &multi, int &count) {
