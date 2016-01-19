@@ -13,18 +13,15 @@
 
 using namespace std;
 
-#define SOCKET_ERROR        -1
-#define BUFFER_SIZE         100
-#define HOST_NAME_SIZE      255
+#define SOCKET_ERROR	-1
+#define MAX_HTTP_SIZE	100
 
 char* buildRequest(char* host, char* port, char* path);
 int getResponse(char* request, char* host, int port);
-void parseHttp(int socketHandle, char* headers, char* body);
+void parseHttp(int socketHandle, char* &headers, char* &body);
 void printDebug(char* request, char* headers);
-void spamRequests(char* request, int count);
-int getContentLength(int socketHandle);
-char* getHeaders(int socketHandle);
-char* getBody(int socketHandle, int length);
+void spamRequests(int socketHandle, char* request, int length, int count);
+void getHeaders(int socketHandle, char* &headers, int &contentLength);
 
 void download(char* host, char* portStr, char* path, bool debug, bool multi, int count) {
 	char* request = buildRequest(host, portStr, path);
@@ -33,20 +30,24 @@ void download(char* host, char* portStr, char* path, bool debug, bool multi, int
 	char* headers;
 	char* body;
 	parseHttp(socketHandle, headers, body);
+	printf("\n");
 	if(debug) {
 		printDebug(request, headers);
 	}
 	if(debug || !multi) {
-		cout << body << endl;
+		printf(body);
 	}
 	if(multi) {
 		int requestsLeft = count - 1;
-		spamRequests(request, requestsLeft);
+		spamRequests(socketHandle, request, strlen(request), requestsLeft);
+	}
+	if(close(socketHandle) == SOCKET_ERROR) {
+		errorAndExit("Could not close socket");
 	}
 }
 
 char* buildRequest(char* host, char* port, char* path) {
-	char* result = (char*)malloc(1000);
+	char* result = (char*)malloc(MAX_HTTP_SIZE);
 	strcat(result, "GET ");
 	strcat(result, path);
 	strcat(result, " HTTP/1.0");
@@ -79,51 +80,38 @@ int getResponse(char* request, char* host, int port) {
 	return socketHandle;
 }
 
-void parseHttp(int socketHandle, char* headers, char* body) {
-	int contentLength = getContentLength(socketHandle);
-	printf("%i", contentLength);
-	//headers = getHeaders(socketHandle);
-	body = getBody(socketHandle, contentLength);	
+void parseHttp(int socketHandle, char* &headers, char* &body) {
+	int contentLength;
+	getHeaders(socketHandle, headers, contentLength);
+	body = (char*)malloc(contentLength);
+	read(socketHandle, body, contentLength);	
 }
 
-int getContentLength(int socketHandle) {
-	bool found = false;
-	char* line;
-	GetLine(socketHandle);
-	while(!found) {
-		char* line = GetLine(socketHandle);
+void getHeaders(int socketHandle, char* &headers, int &contentLength) {
+	headers = (char*)malloc(MAX_HTTP_SIZE);
+	char* line = GetLine(socketHandle);
+	while(strlen(line) != 0) {
+		char* originalLine = (char*)malloc(strlen(line));
+		strcpy(originalLine, line);
 		char* key = strtok(line, ":");
-		printf("key: ");
-		printf(key);
-		printf("\n");
 		if(strstr(key, "Content-Length")) {
 			char* value = strtok(NULL, ":");
-			printf("value: ");
-			printf(value);
-			printf("\n");
-			found = true;
-			return stoi(value);
+			contentLength = stoi(value);
 		}
+		strcat(headers, originalLine);
+		strcat(headers, "\n");
+		line = GetLine(socketHandle);
 	}
-	lseek(socketHandle, 0, SEEK_SET);
-}
-
-char* getHeaders(int socketHandle) {
-	char* line = GetLine(socketHandle);
-	while(line != "\r\n") {
-		printf(line);
-	}
-	printf("found: %s", line);
-}
-
-char* getBody(int socketHandle, int length) {
-	return "yo";
+	strcat(headers, "\n");
 }
 
 void printDebug(char* request, char* headers) {
 	printf(request);
+	printf(headers);
 }
 
-void spamRequests(char* request, int count) { 
-	
+void spamRequests(int socketHandle, char* request, int length, int count) { 
+	for(int i = count; i > 0; i--) {
+		write(socketHandle, request, length);
+	}
 }
