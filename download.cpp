@@ -80,18 +80,40 @@ int getResponse(char* request, char* host, int port) {
 }
 
 void parseHttp(int socketHandle, char* headers, char* body) {
-	printf(GetLine(socketHandle));
 	int contentLength = getContentLength(socketHandle);
-	headers = getHeaders(socketHandle);
+	printf("%i", contentLength);
+	//headers = getHeaders(socketHandle);
 	body = getBody(socketHandle, contentLength);	
 }
 
 int getContentLength(int socketHandle) {
-	return 1;
+	bool found = false;
+	char* line;
+	GetLine(socketHandle);
+	while(!found) {
+		char* line = GetLine(socketHandle);
+		char* key = strtok(line, ":");
+		printf("key: ");
+		printf(key);
+		printf("\n");
+		if(strstr(key, "Content-Length")) {
+			char* value = strtok(NULL, ":");
+			printf("value: ");
+			printf(value);
+			printf("\n");
+			found = true;
+			return stoi(value);
+		}
+	}
+	lseek(socketHandle, 0, SEEK_SET);
 }
 
 char* getHeaders(int socketHandle) {
-	return "hello";
+	char* line = GetLine(socketHandle);
+	while(line != "\r\n") {
+		printf(line);
+	}
+	printf("found: %s", line);
 }
 
 char* getBody(int socketHandle, int length) {
