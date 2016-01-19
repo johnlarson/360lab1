@@ -23,4 +23,5 @@ rmobjs:
 	rm *.o
 
 clean: rmobjs
-	rm download dbfile
+	rm download
+	rm dbfile

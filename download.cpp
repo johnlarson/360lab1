@@ -9,6 +9,7 @@
 #include <iostream>
 #include <map>
 #include "utils.h"
+#include "cs360Utils.h"
 
 using namespace std;
 
@@ -17,18 +18,21 @@ using namespace std;
 #define HOST_NAME_SIZE      255
 
 char* buildRequest(char* host, char* port, char* path);
-string getResponse(char* request, char* host, int port);
-void parseHttp(string response, string &headers, string &body);
-void printDebug(char* request, map<string, string> headers);
+int getResponse(char* request, char* host, int port);
+void parseHttp(int socketHandle, char* headers, char* body);
+void printDebug(char* request, char* headers);
 void spamRequests(char* request, int count);
+int getContentLength(int socketHandle);
+char* getHeaders(int socketHandle);
+char* getBody(int socketHandle, int length);
 
 void download(char* host, char* portStr, char* path, bool debug, bool multi, int count) {
 	char* request = buildRequest(host, portStr, path);
 	int portInt = stoi(portStr);
-	string response = getResponse(request, host, portInt);
-	string headers;
-	string body;
-	parseHttp(response, headers, body);
+	int socketHandle = getResponse(request, host, portInt);
+	char* headers;
+	char* body;
+	parseHttp(socketHandle, headers, body);
 	if(debug) {
 		printDebug(request, headers);
 	}
@@ -42,16 +46,20 @@ void download(char* host, char* portStr, char* path, bool debug, bool multi, int
 }
 
 char* buildRequest(char* host, char* port, char* path) {
-	char* result = (char*)malloc(50);
+	char* result = (char*)malloc(1000);
 	strcat(result, "GET ");
 	strcat(result, path);
-	strcat(result, " HTTP/1.0\n");
-	strcat(result, "Host: ");
+	strcat(result, " HTTP/1.0");
+	strcat(result, "\r\nHost: ");
 	strcat(result, host);
+	strcat(result, "\r\nAccept: */*");
+	strcat(result, "\r\nContent-Type: text/html");
+	strcat(result, "\r\nContent-Length: 0");
+	strcat(result, "\r\n\r\n");
 	return result;
 }
 
-string getResponse(char* request, char* host, int port) {
+int getResponse(char* request, char* host, int port) {
 	const int READ_AMOUNT = 2000;
 	int socketHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(socketHandle == SOCKET_ERROR) {
@@ -68,18 +76,29 @@ string getResponse(char* request, char* host, int port) {
 		errorAndExit("Could not connect to host");
 	}
 	write(socketHandle, request, strlen(request));
-	char* responseBuffer = (char*)malloc(READ_AMOUNT);
-	read(socketHandle, responseBuffer, READ_AMOUNT);
-	string result = string(responseBuffer);
-	cout << result << endl;
-	return string(responseBuffer);
+	return socketHandle;
 }
 
-void parseHttp(string response, string &headers, string &body) {
-	/* while getline !=0 { nothing } body = get the rest*/ 
+void parseHttp(int socketHandle, char* headers, char* body) {
+	printf(GetLine(socketHandle));
+	int contentLength = getContentLength(socketHandle);
+	headers = getHeaders(socketHandle);
+	body = getBody(socketHandle, contentLength);	
 }
 
-void printDebug(char* request, string headers) {
+int getContentLength(int socketHandle) {
+	return 1;
+}
+
+char* getHeaders(int socketHandle) {
+	return "hello";
+}
+
+char* getBody(int socketHandle, int length) {
+	return "yo";
+}
+
+void printDebug(char* request, char* headers) {
 	printf(request);
 }
 
