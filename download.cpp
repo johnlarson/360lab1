@@ -14,22 +14,22 @@
 using namespace std;
 
 #define SOCKET_ERROR	-1
-#define MAX_HTTP_SIZE	100
+#define MAX_HTTP_SIZE	8192
 
 char* buildRequest(char* host, char* port, char* path);
+void setPrintables(char* &headers, char* &body, char* request, char* host, int port);
 int getResponse(char* request, char* host, int port);
 void parseHttp(int socketHandle, char* &headers, char* &body);
 void printDebug(char* request, char* headers);
-void spamRequests(int socketHandle, char* request, int length, int count);
+void spamRequests(char* request, char* host, int port, int count);
 void getHeaders(int socketHandle, char* &headers, int &contentLength);
 
 void download(char* host, char* portStr, char* path, bool debug, bool multi, int count) {
 	char* request = buildRequest(host, portStr, path);
 	int portInt = stoi(portStr);
-	int socketHandle = getResponse(request, host, portInt);
 	char* headers;
 	char* body;
-	parseHttp(socketHandle, headers, body);
+	setPrintables(headers, body, request, host, portInt);
 	printf("\n");
 	if(debug) {
 		printDebug(request, headers);
@@ -39,10 +39,7 @@ void download(char* host, char* portStr, char* path, bool debug, bool multi, int
 	}
 	if(multi) {
 		int requestsLeft = count - 1;
-		spamRequests(socketHandle, request, strlen(request), requestsLeft);
-	}
-	if(close(socketHandle) == SOCKET_ERROR) {
-		errorAndExit("Could not close socket");
+		spamRequests(request, host, portInt, requestsLeft);
 	}
 }
 
@@ -58,6 +55,14 @@ char* buildRequest(char* host, char* port, char* path) {
 	strcat(result, "\r\nContent-Length: 0");
 	strcat(result, "\r\n\r\n");
 	return result;
+}
+
+void setPrintables(char* &headers, char* &body, char* request, char* host, int port) {	
+	int socketHandle = getResponse(request, host, port);
+	parseHttp(socketHandle, headers, body);
+	if(close(socketHandle) == SOCKET_ERROR) {
+		errorAndExit("Could not close socket");
+	}
 }
 
 int getResponse(char* request, char* host, int port) {
@@ -110,8 +115,12 @@ void printDebug(char* request, char* headers) {
 	printf(headers);
 }
 
-void spamRequests(int socketHandle, char* request, int length, int count) { 
+void spamRequests(char* request, char* host, int port, int count) { 
+	int responses = 0;
 	for(int i = count; i > 0; i--) {
-		write(socketHandle, request, length);
+		char* headers;
+		char* body;
+		setPrintables(headers, body, request, host, port);
 	}
+	printf("Got %i responses", responses);
 }
