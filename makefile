@@ -2,21 +2,21 @@ CC = g++ -std=c++11 -c
 
 all: objs exe rmobjs
 
-objs: main download utils
+objs: utils.o download.o main.o
 
 debug:
 	g++ -std=c++11 -g main.cpp download.cpp utils.cpp -o dbfile
 
-main:
+main.o:
 	$(CC) main.cpp
 
-download:
+download.o:
 	$(CC) download.cpp
 
-utils:
+utils.o:
 	$(CC) utils.cpp
 
-exe:
+exe: download.o utils.o main.o
 	g++ *.o -o download
 
 rmobjs:

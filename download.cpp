@@ -27,19 +27,17 @@ void getHeaders(int socketHandle, char* &headers, int &contentLength);
 void download(char* host, char* portStr, char* path, bool debug, bool multi, int count) {
 	char* request = buildRequest(host, portStr, path);
 	int portInt = stoi(portStr);
-	char* headers;
-	char* body;
-	setPrintables(headers, body, request, host, portInt);
 	printf("\n");
-	if(debug) {
-		printDebug(request, headers);
-	}
-	if(debug || !multi) {
-		printf(body);
-	}
 	if(multi) {
-		int requestsLeft = count - 1;
-		spamRequests(request, host, portInt, requestsLeft);
+		spamRequests(request, host, portInt, count);
+	} else {
+		char* headers;
+		char* body;
+		setPrintables(headers, body, request, host, portInt);
+		if(debug) {
+			printDebug(request, headers);
+		}
+		printf(body);
 	}
 }
 
@@ -118,9 +116,14 @@ void printDebug(char* request, char* headers) {
 void spamRequests(char* request, char* host, int port, int count) { 
 	int responses = 0;
 	for(int i = count; i > 0; i--) {
-		char* headers;
-		char* body;
+		char* headers = NULL;
+		char* body = NULL;
 		setPrintables(headers, body, request, host, port);
+		if(strlen(headers) > 0 && strlen(body) > 0) {
+			responses++;
+		}
+		//printf(headers);
+		//printf(body);
 	}
-	printf("Got %i responses", responses);
+	printf("Got %i responses\n", responses);
 }
