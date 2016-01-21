@@ -27,18 +27,21 @@ void getHeaders(int socketHandle, char* &headers, int &contentLength);
 void download(char* host, char* portStr, char* path, bool debug, bool multi, int count) {
 	char* request = buildRequest(host, portStr, path);
 	int portInt = stoi(portStr);
-	printf("\n");
 	if(multi) {
 		spamRequests(request, host, portInt, count);
 	} else {
 		char* headers;
 		char* body;
 		setPrintables(headers, body, request, host, portInt);
+		printf("\n");
 		if(debug) {
 			printDebug(request, headers);
 		}
 		printf(body);
+		free(headers);
+		free(body);
 	}
+	free(request);
 }
 
 char* buildRequest(char* host, char* port, char* path) {
@@ -70,6 +73,9 @@ int getResponse(char* request, char* host, int port) {
 		errorAndExit("Could not make socket");
 	}
 	struct hostent* hostInfo = gethostbyname(host);
+	if(hostInfo == NULL) {
+		errorAndExit("Could not resolve host name");
+	}
 	long hostIp;
 	memcpy(&hostIp, hostInfo->h_addr, hostInfo->h_length);
 	struct sockaddr_in address;
@@ -77,6 +83,8 @@ int getResponse(char* request, char* host, int port) {
 	address.sin_port = htons(port);
 	address.sin_family = AF_INET;
 	if(connect(socketHandle, (struct sockaddr*)&address, sizeof(address)) == SOCKET_ERROR) {
+		printf("!!!!!!!");
+		close(socketHandle);
 		errorAndExit("Could not connect to host");
 	}
 	write(socketHandle, request, strlen(request));
@@ -104,6 +112,7 @@ void getHeaders(int socketHandle, char* &headers, int &contentLength) {
 		strcat(headers, originalLine);
 		strcat(headers, "\n");
 		line = GetLine(socketHandle);
+		free(originalLine);
 	}
 	strcat(headers, "\n");
 }
@@ -119,9 +128,13 @@ void spamRequests(char* request, char* host, int port, int count) {
 		char* headers = NULL;
 		char* body = NULL;
 		setPrintables(headers, body, request, host, port);
-		if(strlen(headers) > 0 && strlen(body) > 0) {
+		bool notNull = headers != NULL && body != NULL;
+		bool notZeroLength = strlen(headers) > 0 && strlen(body) > 0;
+		if(notNull && notZeroLength) {
 			responses++;
 		}
+		free(headers);
+		free(body);
 		//printf(headers);
 		//printf(body);
 	}
